@@ -11,25 +11,6 @@
 		{
 			window.open("/settings","_self");
 		}
-    	function gId(s) { return d.getElementById(s); }
-		function showBrCtrlVal() {
-			gId('minbv').innerText = d.Sf.minb.value;
-			gId('maxbv').innerText = d.Sf.maxb.value;
-		}
-		function adjustRange(start) {
-			if (start) {
-				d.Sf.minb.value = Math.min(parseInt(d.Sf.minb.value), parseInt(d.Sf.maxb.value) - 1);
-			} else {
-				d.Sf.maxb.value = Math.max(parseInt(d.Sf.maxb.value), parseInt(d.Sf.minb.value) + 1);
-			}
-		}
-		function updateBrCtrl() {
-			var enabled = d.Sf.autb.checked;
-			gId('brctrl').style.opacity = enabled ? '1' : '.5';
-			d.Sf.minb.disabled = !enabled;
-			d.Sf.maxb.disabled = !enabled;
-			showBrCtrlVal();
-		}
 		function beep(beep) {
 			fetch('/json/state', {
 				method: 'post',
@@ -64,7 +45,6 @@
 			// success event 
 			scE.addEventListener("load", () => {
 				GetV();
-				updateBrCtrl();
 			});
 			// error event
 			scE.addEventListener("error", (ev) => {
@@ -73,31 +53,16 @@
 			});
 		}
 		function init() {
-			var h  = document.getElementsByTagName('head')[0];
-			var l  = document.createElement('script');
-			l.type = 'application/javascript';
-			l.src = '/rangetouch.js';
-			l.addEventListener('load', (e) => {
-				let stateCheck = setInterval(() => {
-					if (document.readyState === 'complete') {
-						clearInterval(stateCheck);
-
-						RangeTouch.setup('input[type="range"]', {});
-
-						if (window.location.protocol == "file:") {
-							loc = true;
-							locip = localStorage.getItem('locIp');
-							if (!locip) {
-								locip = prompt("File Mode. Please enter WLED IP!");
-								localStorage.setItem('locIp', locip);
-							}
-						}
-						var url = (loc?`http://${locip}`:'') + '/settings/s.js?p=11';
-						loadJS(url);
-					}
-				}, 100);
-			});
-			h.appendChild(l);
+			if (window.location.protocol == "file:") {
+				loc = true;
+				locip = localStorage.getItem('locIp');
+				if (!locip) {
+					locip = prompt("File Mode. Please enter WLED IP!");
+					localStorage.setItem('locIp', locip);
+				}
+			}
+			var url = (loc?`http://${locip}`:'') + '/settings/s.js?p=11';
+			loadJS(url);
 		}
 	</script>
 	<style>
@@ -110,21 +75,6 @@
 		<button type="button" onclick="B()">Back</button><button type="submit">Save</button>
 		<hr>
 		<h2>LED Clock Settings</h2>
-
-		<h3>Brightness Control</h3>
-		<input type="checkbox" name="autb" onchange="updateBrCtrl()"> Automatic brightness control:<br>
-		<div id="brctrl" class="il">
-			Minimum brightness: <span id="minbv"></span><br>
-			<div class="sliderwrap il">
-				<input id="minb" name="minb" max="254" min="1" type="range" oninput="adjustRange(false);showBrCtrlVal()" />
-				<div class="sliderdisplay"></div>
-			</div><br>
-			Maximum brightness: <span id="maxbv"></span><br>
-			<div class="sliderwrap il">
-				<input id="maxb" name="maxb" max="255" min="2" type="range" oninput="adjustRange(true);showBrCtrlVal()" />
-				<div class="sliderdisplay"></div>
-			</div><br>
-		</div>
 
 		<h3>Display Settings</h3>
 		<input type="checkbox" name="hidzer"> Hide leading zero (hours)<br>

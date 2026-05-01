@@ -769,9 +769,6 @@ void getSettingsJS(byte subPage, char* dest)
 
     LedClockSettings* settings = dynamic_cast<LedClockSettings *>(usermods.lookup(USERMOD_ID_LEDCLOCK));
     if (settings != nullptr) {
-      sappend('c', LedClockSettingsKeys::Brightness::autom, settings->autoBrightness);
-      sappend('v', LedClockSettingsKeys::Brightness::min, settings->minBrightness);
-      sappend('v', LedClockSettingsKeys::Brightness::max, settings->maxBrightness);
       sappend('i', LedClockSettingsKeys::Display::separatorMode, settings->separatorMode);
       sappend('c', LedClockSettingsKeys::Display::hideZero, settings->hideZero);
 

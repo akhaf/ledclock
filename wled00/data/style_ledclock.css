@@ -79,10 +79,6 @@ input[type=range]:active + .sliderbubble {
 	vertical-align: middle;
 }
 
-#brctrl {
-	transition: opacity 0.4s;
-}
-
 .beeptable {
 	display: grid;
 	grid-template-columns: max-content max-content;

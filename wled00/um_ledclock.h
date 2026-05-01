@@ -229,10 +229,6 @@ const char
 
     *LedClockSettingsKeys::root = "ledclock",
 
-    *LedClockSettingsKeys::Brightness::autom = "autb",
-    *LedClockSettingsKeys::Brightness::min = "minb",
-
-    *LedClockSettingsKeys::Brightness::max = "maxb",
     *LedClockSettingsKeys::Display::separatorMode = "sepm",
     *LedClockSettingsKeys::Display::hideZero = "hidzer",
 
@@ -393,32 +389,6 @@ uint8_t LedClockSettings::constrainBeep(uint8_t beep) {
 static CRGB selfTestColors[] = { CRGB::Red, CRGB::Green, CRGB::Blue };
 static uint8_t selfTestColorCount = sizeof(selfTestColors) / sizeof(CRGB);
 
-static uint16_t normalizedSensorReading;
-
-static uint8_t brightness(uint8_t minBrightness, uint8_t maxBrightness) {
-    static uint16_t values[BRIGHTNESS_SAMPLES];
-    static int i = 0;
-    static long total;
-    static uint8_t current;
-
-    total -= values[i];
-    values[i] = analogRead(BRIGHTNESS_PIN);
-    total += values[i];
-
-    i++;
-    i %= BRIGHTNESS_SAMPLES;
-
-    normalizedSensorReading = total / BRIGHTNESS_SAMPLES;
-
-    uint8_t target = map(normalizedSensorReading, 0, ADC_MAX_VALUE, minBrightness, maxBrightness);
-
-    if (abs(target - current) > BRIGHTNESS_THRESHOLD) {
-        current = target;
-    }
-
-    return current;
-}
-
 enum TimeChange {
     HOUR, MINUTE, SECOND, NONE
 };
@@ -514,8 +484,6 @@ private:
 
     time_t p;
 
-    uint8_t br;
-
     Timer selfTestTimer;
     uint8_t selfTestCycle = 0;
     uint8_t selfTestIdx = 0;
@@ -579,8 +547,6 @@ public:
 
         display.setColor(false, CRGB::Black);
         display.setMode(LedBasedDisplayMode::SET_OFF_LEDS);
-
-        pinMode(BRIGHTNESS_PIN, INPUT);
 
         beep(beepStartup);
     }
@@ -734,10 +700,6 @@ public:
             default:
                 break;
             }
-
-            if (!strip.isUpdating()) {
-                br = brightness(minBrightness, maxBrightness);
-            }
         } else {
             if (selfTestTimer.fire()) {
                 selfTestIdx++;
@@ -754,15 +716,6 @@ public:
 
     void connected() {
         beep(beepWiFi);
-    }
-
-    void addToJsonInfo(JsonObject& root) {
-        JsonObject user = root["u"];
-        if (user.isNull()) user = root.createNestedObject("u");
-        JsonArray lightArr = user.createNestedArray("Light sensor");
-        double reading = normalizedSensorReading;
-        lightArr.add((reading / ADC_MAX_VALUE) * ADC_MAX_VOLTAGE);
-        lightArr.add("V");
     }
 
     void addToJsonState(JsonObject& root) {
@@ -988,10 +941,6 @@ public:
     void addToConfig(JsonObject& root) {
         JsonObject top = root.createNestedObject(LedClockSettingsKeys::root);
 
-        top[LedClockSettingsKeys::Brightness::autom] = autoBrightness;
-        top[LedClockSettingsKeys::Brightness::min] = minBrightness;
-        top[LedClockSettingsKeys::Brightness::max] = maxBrightness;
-
         top[LedClockSettingsKeys::Display::separatorMode] = separatorMode;
         top[LedClockSettingsKeys::Display::hideZero] = hideZero;
 
@@ -1028,10 +977,6 @@ public:
         JsonObject top = root[LedClockSettingsKeys::root];
 
         bool configComplete = !top.isNull();
-
-        configComplete &= getJsonValue(top[LedClockSettingsKeys::Brightness::autom], autoBrightness, true);
-        configComplete &= getJsonValue(top[LedClockSettingsKeys::Brightness::min], minBrightness, 50);
-        configComplete &= getJsonValue(top[LedClockSettingsKeys::Brightness::max], maxBrightness, 255);
 
         configComplete &= getJsonValue(top[LedClockSettingsKeys::Display::separatorMode], separatorMode, SeparatorMode::BLINK);
         configComplete &= getJsonValue(top[LedClockSettingsKeys::Display::hideZero], hideZero, true);
@@ -1104,11 +1049,6 @@ public:
             }
 
             display.update();
-
-            if (autoBrightness && bri > 0 && bri != br) {
-                bri = br;
-                stateUpdated(CALL_MODE_DIRECT_CHANGE);
-            }
         } else {
             for (uint8_t i = 0, n = busses.getTotalLength(); i < n; ++i) {
                 CRGB color = i <= selfTestIdx

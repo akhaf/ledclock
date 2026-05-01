@@ -720,7 +720,6 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
     LedClockSettings* settings = dynamic_cast<LedClockSettings *>(usermods.lookup(USERMOD_ID_LEDCLOCK));
 
     // booleans
-    settings->autoBrightness = false;
     settings->hideZero = false;
     settings->muteBeeps = false;
 
@@ -729,19 +728,7 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
       String name = request->argName(i);
       String value = request->arg(i);
 
-      if (name == LedClockSettingsKeys::Brightness::autom) {
-        settings->autoBrightness = true;
-      }
-
-      else if (name == LedClockSettingsKeys::Brightness::min) {
-        settings->minBrightness = constrain(value.toInt(), 1, 254);
-      }
-
-      else if (name == LedClockSettingsKeys::Brightness::max) {
-        settings->maxBrightness = constrain(value.toInt(), 2, 255);
-      }
-
-      else if (name == LedClockSettingsKeys::Display::separatorMode) {
+      if (name == LedClockSettingsKeys::Display::separatorMode) {
         settings->separatorMode = constrain((LedClockSettings::SeparatorMode) value.toInt(),
             LedClockSettings::SeparatorMode::ON, LedClockSettings::SeparatorMode::BLINK);
       }
@@ -779,11 +766,6 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
       else if (name == LedClockSettingsKeys::Beeps::Stopwatch::minute) settings->stopwatchBeepMinute = LedClockSettings::constrainBeep(value.toInt());
       else if (name == LedClockSettingsKeys::Beeps::Stopwatch::hour) settings->stopwatchBeepHour = LedClockSettings::constrainBeep(value.toInt());
       else if (name == LedClockSettingsKeys::Beeps::Stopwatch::lapTime) settings->stopwatchBeepLapTime = LedClockSettings::constrainBeep(value.toInt());
-    }
-
-    // make sure we have proper values
-    if (settings->maxBrightness <= settings->minBrightness) {
-      settings->maxBrightness = settings->minBrightness + 1;
     }
 
     settings->applySettings();

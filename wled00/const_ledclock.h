@@ -9,11 +9,6 @@
 #define MQTT_CLIENT_ID "LEDCLOCK"
 
 #define BUZZER_PIN 10
-#define ADC_MAX_VALUE 4095
-#define ADC_MAX_VOLTAGE 3.3
-#define BRIGHTNESS_SAMPLES 1024
-#define BRIGHTNESS_THRESHOLD 5
-#define BRIGHTNESS_PIN 1
 
 #define STOPWATCH_MAX_LAP_TIMES 100
 
@@ -122,11 +117,6 @@ class LedClockSettingsKeys {
 public:
     static const char *root;
 
-    class Brightness {
-    public:
-        static const char *autom, *min, *max;
-    };
-
     class Display {
     public:
         static const char *separatorMode, *hideZero;
@@ -176,9 +166,6 @@ public:
     };
 
     virtual ~LedClockSettings() {}
-    bool autoBrightness = true;
-    uint8_t minBrightness = 50; // must NOT be lower than 1
-    uint8_t maxBrightness = 255;
     SeparatorMode separatorMode = SeparatorMode::BLINK;
     bool hideZero = true;
 

@@ -521,7 +521,7 @@ public:
         dMinutesT(&outputPixel, LC_LEDS_PER_SEGM),
         dMinutesO(&outputPixel, LC_LEDS_PER_SEGM),
         display(5, &dHoursT, &dHoursO, &sep, &dMinutesT, &dMinutesO),
-        beeper(0, BUZZER_PIN),
+        beeper(0, BUZZER_PIN, BUZZER_ENABLE_PIN),
         selfTestTimer(10),
         stopwatchTimer(0),
         timerTimer(0) {}
